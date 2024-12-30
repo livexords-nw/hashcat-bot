@@ -1,0 +1,9 @@
+{
+  "daily": true,
+  "card": true,
+  "tap": true,
+  "farm": true,
+  "stack_balance": true,
+  "delay_loop": 3000,
+  "delay_account_switch": 10
+}

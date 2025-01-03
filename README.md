@@ -14,13 +14,21 @@ The Hashcat Bot is designed to automate various tasks in **Hashcat**, including:
 - **Automatic Tap Actions**
 - **Automatic Farming**
 - **Automatic Stack Balance**
+- **Automatic Referral Claims**
 - **Multi-Account Support**
 
 With this bot, you can save time and maximize your outcomes without manual interactions.
 
 ---
 
-## 🌟 **Version v1.0.0**
+## 🌟 **Version v1.1.0**
+
+### **Changes in Version v1.1.0**
+
+1. **New Feature**: Auto Claim Referrals - Automatically claim rewards from referrals.
+2. **Improved Logger**: Enhanced logging system for better clarity and debugging.
+
+---
 
 ### **Features in This Version**:
 
@@ -29,6 +37,7 @@ With this bot, you can save time and maximize your outcomes without manual inter
 - **Auto Tap Actions**: Perform tap actions seamlessly.
 - **Auto Farming**: Handle farming tasks automatically.
 - **Auto Stack Balance**: Automatically stack balances to increase efficiency.
+- **Auto Referral Claims**: Automatically claim rewards from referrals.
 - **Multi-Account Support**: Manage multiple accounts simultaneously.
 - **Delay Loop and Account Switching**: Set intervals for looping and account transitions.
 
@@ -55,12 +64,13 @@ Start using Hashcat by registering through the following link:
 | `tap`                  | Perform tap actions                      | `True`      |
 | `farm`                 | Automate farming tasks                   | `True`      |
 | `stack_balance`        | Automatically stack balance              | `True`      |
+| `reff`                 | Automate referral claims                 | `True`      |
 | `delay_account_switch` | Delay between account switches (seconds) | `10`        |
 | `delay_loop`           | Delay before the next loop (seconds)     | `3000`      |
 
 ---
 
-## 📖 **Installation Steps**
+## 📚 **Installation Steps**
 
 1. **Clone the Repository**  
    Copy the project to your local machine:
@@ -102,17 +112,18 @@ Start using Hashcat by registering through the following link:
 - **Auto Tap Actions**: Execute tap actions without manual input.
 - **Auto Farming**: Perform farming tasks efficiently.
 - **Auto Stack Balance**: Stack your balances to improve your results.
+- **Auto Referral Claims**: Seamlessly claim referral rewards.
 - **Multi-Account Support**: Run multiple accounts at the same time.
 
 ---
 
 ## 🛠️ **Contributing**
 
-This project is developed by **Livexords**. If you have suggestions, questions, or would like to contribute, feel free to contact us:
+This project is developed by **LIVEXORDS**. If you have suggestions, questions, or would like to contribute, feel free to contact us:
 
 <div align="center">
   <a href="https://t.me/livexordsscript" target="_blank">
-    <img src="https://img.shields.io/static/v1?message=Livexords&logo=telegram&label=&color=2CA5E0&logoColor=white&labelColor=&style=for-the-badge" height="25" alt="telegram logo" />
+    <img src="https://img.shields.io/static/v1?message=LIVEXORDS&logo=telegram&label=&color=2CA5E0&logoColor=white&labelColor=&style=for-the-badge" height="25" alt="telegram logo" />
   </a>
 </div>
 

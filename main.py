@@ -38,18 +38,34 @@ class hashcat:
             print(Fore.LIGHTBLACK_EX + datetime.now().strftime("[%Y:%m:%d ~ %H:%M:%S] |") + " " + color + message + Fore.RESET)
 
     def load_config(self) -> dict:
-        """Loads configuration from config.json."""
+        """
+        Loads configuration from config.json.
+
+        Returns:
+            dict: Configuration data or an empty dictionary if an error occurs.
+        """
         try:
             with open("config.json", "r") as config_file:
-                return json.load(config_file)
+                config = json.load(config_file)
+                self.log("✅ Configuration loaded successfully.", Fore.GREEN)
+                return config
         except FileNotFoundError:
-            self.log("❌ File config.json not found!", Fore.RED)
+            self.log("❌ File not found: config.json", Fore.RED)
             return {}
         except json.JSONDecodeError:
-            self.log("❌ Error reading config.json!", Fore.RED)
+            self.log("❌ Failed to parse config.json. Please check the file format.", Fore.RED)
             return {}
 
-    def load_query(self, path_file="query.txt") -> list:
+    def load_query(self, path_file: str = "query.txt") -> list:
+        """
+        Loads a list of queries from the specified file.
+
+        Args:
+            path_file (str): The path to the query file. Defaults to "query.txt".
+
+        Returns:
+            list: A list of queries or an empty list if an error occurs.
+        """
         self.banner()
 
         try:
@@ -59,18 +75,18 @@ class hashcat:
             if not queries:
                 self.log(f"⚠️ Warning: {path_file} is empty.", Fore.YELLOW)
 
-            self.log(f"✅ Loaded: {len(queries)} queries.", Fore.GREEN)
+            self.log(f"✅ Loaded {len(queries)} queries from {path_file}.", Fore.GREEN)
             return queries
 
         except FileNotFoundError:
             self.log(f"❌ File not found: {path_file}", Fore.RED)
             return []
         except Exception as e:
-            self.log(f"❌ Error loading queries: {e}", Fore.RED)
+            self.log(f"❌ Unexpected error loading queries: {e}", Fore.RED)
             return []
 
     def login(self, index: int) -> None:
-        self.log("🔐 Attempting to log in...", Fore.GREEN)
+        self.log("🔒 Attempting to log in...", Fore.GREEN)
 
         if index >= len(self.query_list):
             self.log("❌ Invalid login index. Please check again.", Fore.RED)
@@ -112,8 +128,6 @@ class hashcat:
                 shard = user_info.get("shard", "Unknown")
                 last_login = user_info.get("lastLogin", "Unknown")
                 
-                # self.coins = coin
-
                 self.log("✅ Login successful!", Fore.GREEN)
                 self.log(f"👤 Username: {username}", Fore.LIGHTGREEN_EX)
                 self.log(f"💎 Coin: {coin}", Fore.CYAN)
@@ -128,12 +142,16 @@ class hashcat:
 
         except requests.exceptions.RequestException as e:
             self.log(f"❌ Failed to send login request: {e}", Fore.RED)
+            self.log(f"📄 Response content: {response.text}", Fore.RED)
         except ValueError as e:
             self.log(f"❌ Data error (possible JSON issue): {e}", Fore.RED)
+            self.log(f"📄 Response content: {response.text}", Fore.RED)
         except KeyError as e:
             self.log(f"❌ Key error: {e}", Fore.RED)
+            self.log(f"📄 Response content: {response.text}", Fore.RED)
         except Exception as e:
             self.log(f"❌ Unexpected error: {e}", Fore.RED)
+            self.log(f"📄 Response content: {response.text}", Fore.RED)
 
     def update_balance(self) -> int:
         """Updates the user's balance from the server."""
@@ -156,12 +174,15 @@ class hashcat:
 
         except requests.exceptions.RequestException as e:
             self.log(f"❌ Failed to fetch balance: {e}", Fore.RED)
+            self.log(f"📄 Response content: {response.text}", Fore.RED)
             return 0  # Return 0 if updating the balance fails
         except ValueError as e:
             self.log(f"❌ Data error: {e}", Fore.RED)
+            self.log(f"📄 Response content: {response.text}", Fore.RED)
             return 0
         except Exception as e:
             self.log(f"❌ An unexpected error occurred: {e}", Fore.RED)
+            self.log(f"📄 Response content: {response.text}", Fore.RED)
             return 0
     
     def daily(self) -> None:
@@ -174,11 +195,12 @@ class hashcat:
             response = requests.post(req_url_daily, headers=headers, json={})
 
             if response.status_code == 400:
-                self.log("❌ Daily reward has already been claimed! 🕒 Try again tomorrow.", Fore.YELLOW)
+                self.log("❌ Daily reward has already been claimed! ⏳ Try again tomorrow.", Fore.YELLOW)
+                self.log(f"📄 Response Content: {response.text}", Fore.CYAN)
                 return
             elif response.status_code != 200:
                 self.log(f"⚠️ Failed to claim daily reward. Status Code: {response.status_code}", Fore.RED)
-                self.log(f"🔍 Response Content: {response.text}", Fore.CYAN)
+                self.log(f"📄 Response Content: {response.text}", Fore.CYAN)
                 return
 
             daily_data = response.json()
@@ -186,24 +208,32 @@ class hashcat:
             last_claimed = daily_data.get("lastClaimed", "Unknown")
             balance = daily_data.get("balance", "0")
             stacked_balance = daily_data.get("stackedBalance", "0")
- 
+
             self.log(
                 "🎉 Daily Reward Claimed Successfully!",
                 Fore.GREEN
             )
             self.log(f"🔥 Strike Count: {strike}", Fore.YELLOW)
-            self.log(f"🕒 Last Claimed: {last_claimed}", Fore.YELLOW)
+            self.log(f"⏳ Last Claimed: {last_claimed}", Fore.YELLOW)
             self.log(f"💰 Current Balance: {balance}", Fore.YELLOW)
             self.log(f"📦 Stacked Balance: {stacked_balance}", Fore.YELLOW)
 
         except requests.exceptions.RequestException as e:
             self.log(f"❌ Network error while claiming daily reward: {e}", Fore.RED)
+            self.log(f"📄 Response Content: {response.text}", Fore.RED)
         except ValueError as e:
             self.log(f"❌ Data error: Unable to process reward details: {e}", Fore.RED)
+            self.log(f"📄 Response Content: {response.text}", Fore.RED)
         except Exception as e:
             self.log(f"❌ Unexpected error occurred: {e}", Fore.RED)
+            self.log(f"📄 Response Content: {response.text}", Fore.RED)
 
     def card(self) -> None:
+        """
+        Manages card purchasing and upgrades.
+        Continues purchasing until balance is depleted.
+        If unable to afford the best card, attempts to buy any card available.
+        """
         req_url_cards = f"{self.BASE_URL}inventory/user/cards"
         req_url_equipment = f"{self.BASE_URL}inventory/cards"
         req_url_buy_card = f"{self.BASE_URL}users/buy-card"
@@ -213,8 +243,8 @@ class hashcat:
             while True:
                 user_coins = self.update_balance()
                 if user_coins == 0:
-                    self.log("❌ Unable to fetch balance. Aborting card purchasing.", Fore.RED)
-                    return
+                    self.log("❌ Balance is zero. Exiting card purchasing process.", Fore.RED)
+                    break
 
                 self.log(f"💰 Current balance: {user_coins}", Fore.YELLOW)
 
@@ -236,8 +266,9 @@ class hashcat:
 
                 if not equipment_data:
                     self.log("❌ No cards available for purchase.", Fore.RED)
-                    return
+                    break
 
+                # Find the best card
                 best_card = None
                 best_profit_increase = 0
 
@@ -265,30 +296,69 @@ class hashcat:
                                 "profit_increase": profit_increase
                             }
 
-                if not best_card:
-                    self.log("❌ No profitable cards available for upgrade.", Fore.RED)
-                    break
+                if best_card:
+                    self.log(
+                        f"🔝 Best card for upgrade: {best_card['name']} "
+                        f"(Next Level: {best_card['next_level']}, Price: {best_card['next_price']}, Profit Increase: {best_card['profit_increase']})",
+                        Fore.GREEN
+                    )
 
-                self.log(
-                    f"🔝 Best card for upgrade: {best_card['name']} "
-                    f"(Next Level: {best_card['next_level']}, Price: {best_card['next_price']}, Profit Increase: {best_card['profit_increase']})",
-                    Fore.GREEN
-                )
+                    payload = {"card_id": best_card["id"], "category": best_card["category"]}
+                    self.log(f"🛒 Attempting to purchase upgraded card: {best_card['name']}...", Fore.CYAN)
+                    buy_response = requests.post(req_url_buy_card, headers=headers, json=payload)
 
-                payload = {"card_id": best_card["id"], "category": best_card["category"]}
-                self.log(f"🛍️ Attempting to purchase upgraded card: {best_card['name']}...", Fore.CYAN)
-                buy_response = requests.post(req_url_buy_card, headers=headers, json=payload)
-
-                if buy_response.status_code == 403:  
-                    self.log(f"❌ Not enough balance to purchase '{best_card['name']}'.", Fore.RED)
-                    break
-                elif buy_response.status_code != 200:
-                    self.log(f"❌ Failed to purchase '{best_card['name']}'. Error code: {buy_response.status_code}", Fore.RED)
-                    break
+                    if buy_response.status_code == 403:
+                        self.log(f"❌ Not enough balance to purchase '{best_card['name']}'.", Fore.RED)
+                    elif buy_response.status_code != 200:
+                        self.log(f"❌ Failed to purchase '{best_card['name']}'. Error code: {buy_response.status_code}", Fore.RED)
+                        self.log(f"📄 Response Content: {buy_response.text}", Fore.RED)
+                    else:
+                        buy_data = buy_response.json()
+                        user_coins = int(buy_data.get("balance", user_coins))
+                        self.log(f"✅ '{best_card['name']}' card purchased successfully! New balance: {user_coins}", Fore.GREEN)
                 else:
-                    buy_data = buy_response.json()
-                    user_coins = int(buy_data.get("balance", user_coins))
-                    self.log(f"✅ '{best_card['name']}' card purchased successfully! New balance: {user_coins}", Fore.GREEN)
+                    self.log("⚠️ No profitable cards available. Attempting to buy any affordable card...", Fore.YELLOW)
+
+                    affordable_card = None
+                    for card in equipment_data:
+                        if not card.get("unlocked", False):
+                            continue
+
+                        card_id = card["id"]
+                        user_card = user_cards.get(card_id)
+                        current_level = user_card["level"] if user_card else 0
+
+                        if current_level + 1 < len(card["profits"]):
+                            next_level = current_level + 1
+                            next_price = int(card["prices"][next_level])
+
+                            if next_price <= user_coins:
+                                affordable_card = {
+                                    "id": card_id,
+                                    "name": card["name"],
+                                    "category": card["category"],
+                                    "next_level": next_level,
+                                    "next_price": next_price
+                                }
+                                break
+
+                    if affordable_card:
+                        payload = {"card_id": affordable_card["id"], "category": affordable_card["category"]}
+                        self.log(f"🛒 Purchasing card: {affordable_card['name']}...", Fore.CYAN)
+                        buy_response = requests.post(req_url_buy_card, headers=headers, json=payload)
+
+                        if buy_response.status_code == 403:
+                            self.log(f"❌ Insufficient balance for '{affordable_card['name']}'.", Fore.RED)
+                        elif buy_response.status_code == 200:
+                            buy_data = buy_response.json()
+                            user_coins = int(buy_data.get("balance", user_coins))
+                            self.log(f"✅ '{affordable_card['name']}' purchased successfully! New balance: {user_coins}", Fore.GREEN)
+                        else:
+                            self.log(f"❌ Failed to purchase '{affordable_card['name']}'. Error code: {buy_response.status_code}", Fore.RED)
+                            self.log(f"📄 Response Content: {buy_response.text}", Fore.RED)
+                    else:
+                        self.log("❌ No cards affordable with remaining balance. Exiting.", Fore.RED)
+                        break
 
         except requests.exceptions.RequestException as e:
             self.log(f"❌ Failed to fetch data from the server: {e}", Fore.RED)
@@ -302,7 +372,7 @@ class hashcat:
         req_url_save_tap_balance = f"{self.BASE_URL}users/save-tap-balance"
         headers = {**self.HEADERS, "authorization": self.token}
         payload_save_tap = {
-            "tapBalance": 9000000  
+            "tapBalance": 9000000
         }
 
         try:
@@ -311,28 +381,28 @@ class hashcat:
             # Step 1: Calculate current time in milliseconds
             current_time_ms = int(time.time() * 1000)
             payload_start_tapping = {"dateStartMs": current_time_ms}
-            self.log(f"⏱️ Current timestamp: {current_time_ms}", Fore.CYAN)
+            self.log(f"⏱ Current timestamp: {current_time_ms}", Fore.CYAN)
 
             # Step 2: Fetch tap token
             self.log("🚀 Fetching tap token...", Fore.CYAN)
             response_start = requests.post(req_url_start_tapping, headers=headers, json=payload_start_tapping)
-            
+
             if response_start.status_code != 200:
                 self.log(f"⚠️ Failed to start tapping. Status Code: {response_start.status_code}", Fore.RED)
                 self.log(f"🔍 Response Content: {response_start.text}", Fore.CYAN)
                 return
-            
+
             start_data = response_start.json()
             tap_token = start_data.get("token")
-            
+
             if not tap_token:
                 self.log("❌ Error: Tap token not found in response!", Fore.RED)
                 return
-            
+
             self.log(f"🔑 Tap token fetched successfully: {tap_token}", Fore.GREEN)
 
             # Step 3: Save tap balance
-            self.log(f"💾 Saving tap balance with 9,000,000...", Fore.CYAN)
+            self.log("💾 Saving tap balance with 9,000,000...", Fore.CYAN)
             payload_save_tap["token"] = tap_token
             response_save = requests.post(req_url_save_tap_balance, headers=headers, json=payload_save_tap)
 
@@ -340,7 +410,7 @@ class hashcat:
                 self.log(f"⚠️ Failed to save tap balance. Status Code: {response_save.status_code}", Fore.RED)
                 self.log(f"🔍 Response Content: {response_save.text}", Fore.CYAN)
                 return
-            
+
             save_data = response_save.json()
             energy = save_data.get("energy", 0)
 
@@ -354,7 +424,7 @@ class hashcat:
                 self.log("⚠️ Energy depleted. Please recharge!", Fore.RED)
 
         except requests.exceptions.RequestException as e:
-            self.log(f"❌ Network error: {e}", Fore.RED)
+            self.log(f"❌ Network error: {e}\nResponse: {e.response.text if e.response else 'No response'}", Fore.RED)
         except ValueError as e:
             self.log(f"❌ Data error: Unable to process response: {e}", Fore.RED)
         except Exception as e:
@@ -362,20 +432,21 @@ class hashcat:
 
     def farm(self):
         headers = {**self.HEADERS, "authorization": self.token}
-        self.log("🔄 Starting farming process...", color=Fore.YELLOW)
+        self.log("➡️ Starting farming process...", color=Fore.YELLOW)
+
         try:
             # Fetch farm slots
             self.log("📋 Fetching farm slots...", color=Fore.YELLOW)
             slots_response = requests.get(f"{self.BASE_URL}farm/slots", headers=headers)
             slots_response.raise_for_status()
             slots = slots_response.json()
-            
+
             for slot in slots:
                 try:
                     slot_id = slot["id"]
                     slot_title = slot.get("title", "Unknown Slot")
                     self.log(f"📂 Processing slot {slot_id} ({slot_title})...", color=Fore.CYAN)
-                    
+
                     # Determine currency type for the slot
                     currency = slot["price"]["currency"]
                     balance_key = "stackedBalance" if currency.startswith("red") else "balance"
@@ -421,7 +492,7 @@ class hashcat:
                         self.log(f"✅ Successfully upgraded slot {slot_id}.", color=Fore.GREEN)
 
                     # Fetch components and attempt upgrades
-                    self.log(f"🔧 Fetching components for slot {slot_id}...", color=Fore.YELLOW)
+                    self.log(f"⚙️ Fetching components for slot {slot_id}...", color=Fore.YELLOW)
                     components_response = requests.get(f"{self.BASE_URL}farm/slot/{slot_id}/components", headers=headers)
                     if components_response.status_code == 403:
                         self.log(f"❌ Forbidden while fetching components for slot {slot_id}. Skipping...", color=Fore.RED)
@@ -433,7 +504,7 @@ class hashcat:
                         component_id = component["id"]
                         component_price = component["price"]["amount"]
                         if balance >= component_price:
-                            self.log(f"🛠️ Upgrading component {component_id} for slot {slot_id}...", color=Fore.CYAN)
+                            self.log(f"🔧 Upgrading component {component_id} for slot {slot_id}...", color=Fore.CYAN)
                             component_upgrade_response = requests.post(
                                 f"{self.BASE_URL}farm/component/{component_id}", 
                                 headers=headers, 
@@ -446,7 +517,7 @@ class hashcat:
                             self.log(f"✅ Successfully upgraded component {component_id}.", color=Fore.GREEN)
 
                 except requests.exceptions.RequestException as e:
-                    self.log(f"❌ Network error in slot {slot_id}: {e}", color=Fore.RED)
+                    self.log(f"❌ Network error in slot {slot_id}: {e}\nResponse: {e.response.text if e.response else 'No response'}", color=Fore.RED)
                 except ValueError as e:
                     self.log(f"❌ Data error in slot {slot_id}: Unable to process response: {e}", color=Fore.RED)
                 except Exception as e:
@@ -470,7 +541,7 @@ class hashcat:
                     self.log(f"✅ Successfully bought free booster {booster['id']}.", color=Fore.GREEN)
 
         except requests.exceptions.RequestException as e:
-            self.log(f"❌ Network error during farming process: {e}", color=Fore.RED)
+            self.log(f"❌ Network error during farming process: {e}\nResponse: {e.response.text if e.response else 'No response'}", color=Fore.RED)
         except ValueError as e:
             self.log(f"❌ Data error during farming process: Unable to process response: {e}", color=Fore.RED)
         except Exception as e:
@@ -479,13 +550,14 @@ class hashcat:
     def stack_balance(self):
         headers = {**self.HEADERS, "authorization": self.token}
         self.log("🔄 Starting stacking process...", color=Fore.YELLOW)
-        
+
         try:
+            # Fetch current balance
             self.log("💰 Fetching current balance...", color=Fore.YELLOW)
             balance_response = requests.get(f"{self.BASE_URL}users/balance", headers=headers)
-            balance_response.raise_for_status()  
+            balance_response.raise_for_status()
             balance_data = balance_response.json()
-            
+
             balance = balance_data.get("balance", 0)
             self.log(f"💳 Current balance: {balance}", color=Fore.GREEN)
 
@@ -493,28 +565,64 @@ class hashcat:
                 payload = {"amount": balance}
                 self.log(f"⬆️ Stacking balance with amount: {balance}...", color=Fore.CYAN)
                 stack_response = requests.post(f"{self.BASE_URL}users/stack-balance", headers=headers, json=payload)
-                stack_response.raise_for_status()  
+                stack_response.raise_for_status()
 
                 self.log("✅ Successfully stacked balance.", color=Fore.GREEN)
             else:
                 self.log("⚠️ Balance is zero. Nothing to stack.", color=Fore.YELLOW)
-        
+
         except requests.exceptions.HTTPError as http_err:
             self.log(f"❌ HTTP error occurred: {http_err}", color=Fore.RED)
             if http_err.response:
                 self.log(f"🔍 Server response: {http_err.response.text}", color=Fore.RED)
-        
+            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
+
         except requests.exceptions.RequestException as req_err:
             self.log(f"❌ Network error during stacking process: {req_err}", color=Fore.RED)
             if req_err.response:
                 self.log(f"🔍 Server response: {req_err.response.text}", color=Fore.RED)
-        
+            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
+
         except ValueError as e:
             self.log(f"❌ Data error: Unable to process response: {e}", color=Fore.RED)
-        
+            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
+
         except Exception as e:
             self.log(f"❌ Unexpected error occurred during stacking process: {e}", color=Fore.RED)
-            
+            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
+
+    def reff(self) -> None:
+        req_url_reff = f"{self.BASE_URL}users/claim-refs-mining"
+        headers = {**self.HEADERS, "authorization": self.token}
+
+        try:
+            self.log("✨ Starting claim referral benefit process...", Fore.CYAN)
+
+            response = requests.get(req_url_reff, headers=headers)
+
+            self.log(f"📄 Full Response Content: {response.text}", Fore.CYAN)
+
+            if response.status_code != 200:
+                self.log(f"⚠️ Failed to claim referral benefit. Status Code: {response.status_code}", Fore.RED)
+                return
+
+            reff_data = response.json()
+
+            if reff_data.get("success"):
+                self.log("🎉 Referral Benefit Claimed Successfully!", Fore.GREEN)
+            else:
+                self.log("❌ Failed to claim referral benefit: Success flag is False.", Fore.RED)
+
+        except requests.exceptions.RequestException as e:
+            self.log(f"❌ Network error while claiming referral benefit: {e}", Fore.RED)
+            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
+        except ValueError as e:
+            self.log(f"❌ Data error: Unable to process referral benefit details: {e}", Fore.RED)
+            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
+        except Exception as e:
+            self.log(f"❌ Unexpected error occurred: {e}", Fore.RED)
+            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
+
 if __name__ == "__main__":
     cat = hashcat()
     index = 0
@@ -539,6 +647,7 @@ if __name__ == "__main__":
             "tap": "🖱️ Tap Actions",
             "farm": "🌾 Farming",
             "stack_balance": "⬆️ Stacking Balance",
+            "reff": "🤝 Referral Program",
         }
 
         for task_key, task_name in tasks.items():

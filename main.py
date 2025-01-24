@@ -230,9 +230,7 @@ class hashcat:
 
     def card(self) -> None:
         """
-        Manages card purchasing and upgrades.
-        Continues purchasing until balance is depleted.
-        If unable to afford the best card, attempts to buy any card available.
+        Manages card purchasing and upgrades, considering both profitability and purchase requirements.
         """
         req_url_cards = f"{self.BASE_URL}inventory/user/cards"
         req_url_equipment = f"{self.BASE_URL}inventory/cards"
@@ -280,6 +278,21 @@ class hashcat:
                     user_card = user_cards.get(card_id)
                     current_level = user_card["level"] if user_card else 0
 
+                    # Check if card requires another card at a specific level
+                    requirements = card.get("requirementsJson")
+                    if requirements:
+                        required_card_id = requirements.get("requiredCardId")
+                        required_card_level = requirements.get("requiredCardLevel")
+
+                        if required_card_id:
+                            required_card = user_cards.get(required_card_id)
+                            if not required_card or required_card["level"] < required_card_level:
+                                self.log(
+                                    f"⚠️ Cannot purchase '{card['name']}' because it requires card ID {required_card_id} at level {required_card_level}.",
+                                    Fore.YELLOW
+                                )
+                                continue
+
                     if current_level + 1 < len(card["profits"]):
                         next_level = current_level + 1
                         next_price = int(card["prices"][next_level])
@@ -317,48 +330,8 @@ class hashcat:
                         user_coins = int(buy_data.get("balance", user_coins))
                         self.log(f"✅ '{best_card['name']}' card purchased successfully! New balance: {user_coins}", Fore.GREEN)
                 else:
-                    self.log("⚠️ No profitable cards available. Attempting to buy any affordable card...", Fore.YELLOW)
-
-                    affordable_card = None
-                    for card in equipment_data:
-                        if not card.get("unlocked", False):
-                            continue
-
-                        card_id = card["id"]
-                        user_card = user_cards.get(card_id)
-                        current_level = user_card["level"] if user_card else 0
-
-                        if current_level + 1 < len(card["profits"]):
-                            next_level = current_level + 1
-                            next_price = int(card["prices"][next_level])
-
-                            if next_price <= user_coins:
-                                affordable_card = {
-                                    "id": card_id,
-                                    "name": card["name"],
-                                    "category": card["category"],
-                                    "next_level": next_level,
-                                    "next_price": next_price
-                                }
-                                break
-
-                    if affordable_card:
-                        payload = {"card_id": affordable_card["id"], "category": affordable_card["category"]}
-                        self.log(f"🛒 Purchasing card: {affordable_card['name']}...", Fore.CYAN)
-                        buy_response = requests.post(req_url_buy_card, headers=headers, json=payload)
-
-                        if buy_response.status_code == 403:
-                            self.log(f"❌ Insufficient balance for '{affordable_card['name']}'.", Fore.RED)
-                        elif buy_response.status_code == 200:
-                            buy_data = buy_response.json()
-                            user_coins = int(buy_data.get("balance", user_coins))
-                            self.log(f"✅ '{affordable_card['name']}' purchased successfully! New balance: {user_coins}", Fore.GREEN)
-                        else:
-                            self.log(f"❌ Failed to purchase '{affordable_card['name']}'. Error code: {buy_response.status_code}", Fore.RED)
-                            self.log(f"📄 Response Content: {buy_response.text}", Fore.RED)
-                    else:
-                        self.log("❌ No cards affordable with remaining balance. Exiting.", Fore.RED)
-                        break
+                    self.log("⚠️ No profitable cards available or requirements not met. Exiting.", Fore.YELLOW)
+                    break
 
         except requests.exceptions.RequestException as e:
             self.log(f"❌ Failed to fetch data from the server: {e}", Fore.RED)

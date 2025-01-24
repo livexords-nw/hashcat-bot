@@ -21,12 +21,11 @@ With this bot, you can save time and maximize your outcomes without manual inter
 
 ---
 
-## 🌟 **Version v1.1.1**  
+## 🌟 **Version v1.1.2**
 
-### **Changes in Version v1.1.1**  
+### **Changes in Version v1.1.2**
 
-1. **Bug Fix**: Fixed issues and optimized the stacking system for better performance and reliability.  
-
+1. **Bug Fix**: Improved the card purchasing system. The bot now not only considers the price and profit of the card but also checks whether the card requires another card to be at a specific level.
 ---
 
 ### **Features in This Version**:

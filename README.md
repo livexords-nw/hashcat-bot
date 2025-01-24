@@ -21,12 +21,11 @@ With this bot, you can save time and maximize your outcomes without manual inter
 
 ---
 
-## 🌟 **Version v1.1.0**
+## 🌟 **Version v1.1.1**  
 
-### **Changes in Version v1.1.0**
+### **Changes in Version v1.1.1**  
 
-1. **New Feature**: Auto Claim Referrals - Automatically claim rewards from referrals.
-2. **Improved Logger**: Enhanced logging system for better clarity and debugging.
+1. **Bug Fix**: Fixed issues and optimized the stacking system for better performance and reliability.  
 
 ---
 

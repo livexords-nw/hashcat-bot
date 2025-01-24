@@ -562,8 +562,23 @@ class hashcat:
             self.log(f"💳 Current balance: {balance}", color=Fore.GREEN)
 
             if balance > 0:
-                payload = {"amount": balance}
-                self.log(f"⬆️ Stacking balance with amount: {balance}...", color=Fore.CYAN)
+                # Fetch cat details
+                self.log("🐱 Fetching cat details...", color=Fore.YELLOW)
+                cat_response = requests.get(f"{self.BASE_URL}users/cat", headers=headers)
+                cat_response.raise_for_status()
+                cat_data = cat_response.json()
+
+                # Extract APY from cat details
+                apy = cat_data.get("apy", 0)
+                self.log(f"📈 APY from cat: {apy}", color=Fore.GREEN)
+
+                # Calculate staking amount
+                staking_amount = balance * (apy / 100)
+                self.log(f"⬆️ Calculated staking amount: {staking_amount}", color=Fore.CYAN)
+
+                # Perform staking
+                payload = {"amount": staking_amount}
+                self.log(f"⬆️ Stacking balance with amount: {staking_amount}...", color=Fore.CYAN)
                 stack_response = requests.post(f"{self.BASE_URL}users/stack-balance", headers=headers, json=payload)
                 stack_response.raise_for_status()
 
@@ -575,21 +590,17 @@ class hashcat:
             self.log(f"❌ HTTP error occurred: {http_err}", color=Fore.RED)
             if http_err.response:
                 self.log(f"🔍 Server response: {http_err.response.text}", color=Fore.RED)
-            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
 
         except requests.exceptions.RequestException as req_err:
             self.log(f"❌ Network error during stacking process: {req_err}", color=Fore.RED)
             if req_err.response:
                 self.log(f"🔍 Server response: {req_err.response.text}", color=Fore.RED)
-            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
 
         except ValueError as e:
             self.log(f"❌ Data error: Unable to process response: {e}", color=Fore.RED)
-            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
 
         except Exception as e:
             self.log(f"❌ Unexpected error occurred during stacking process: {e}", color=Fore.RED)
-            self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
 
     def reff(self) -> None:
         req_url_reff = f"{self.BASE_URL}users/claim-refs-mining"

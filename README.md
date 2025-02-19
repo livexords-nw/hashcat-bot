@@ -1,4 +1,5 @@
 ---
+
 <h1 align="center">Hashcat Bot</h1>
 
 <p align="center">Automate tasks in Hashcat to enhance your efficiency and maximize your results!</p>
@@ -9,6 +10,7 @@
 
 The Hashcat Bot is designed to automate various tasks in **Hashcat**, including:
 
+- **Automatic Mastermind Solver**
 - **Automatic Daily Claims**
 - **Automatic Card Management**
 - **Automatic Tap Actions**
@@ -21,15 +23,17 @@ With this bot, you can save time and maximize your outcomes without manual inter
 
 ---
 
-## 🌟 **Version v1.1.2**
+## 🌟 **Version v1.1.3**
 
-### **Changes in Version v1.1.2**
+### **Changes in Version v1.1.3**
 
-1. **Bug Fix**: Improved the card purchasing system. The bot now not only considers the price and profit of the card but also checks whether the card requires another card to be at a specific level.
+1. **New Feature**: Added an auto-solve mastermind system.
+
 ---
 
 ### **Features in This Version**:
 
+- **Auto Solve Mastermind**: Automatically solve mastermind challenges.
 - **Auto Daily Claims**: Claim daily rewards automatically.
 - **Auto Card Management**: Manage your cards without effort.
 - **Auto Tap Actions**: Perform tap actions seamlessly.
@@ -55,16 +59,17 @@ Start using Hashcat by registering through the following link:
 
 ## ⚙️ **Configuration in `config.json`**
 
-| **Function**           | **Description**                          | **Default** |
-| ---------------------- | ---------------------------------------- | ----------- |
-| `daily`                | Automate daily claims                    | `True`      |
-| `card`                 | Manage cards automatically               | `True`      |
-| `tap`                  | Perform tap actions                      | `True`      |
-| `farm`                 | Automate farming tasks                   | `True`      |
-| `stack_balance`        | Automatically stack balance              | `True`      |
-| `reff`                 | Automate referral claims                 | `True`      |
-| `delay_account_switch` | Delay between account switches (seconds) | `10`        |
-| `delay_loop`           | Delay before the next loop (seconds)     | `3000`      |
+| **Function**           | **Description**                           | **Default** |
+| ---------------------- | ----------------------------------------- | ----------- |
+| `mastermind`           | Automatically solve mastermind challenges | `True`      |
+| `daily`                | Automate daily claims                     | `True`      |
+| `card`                 | Manage cards automatically                | `True`      |
+| `tap`                  | Perform tap actions                       | `True`      |
+| `farm`                 | Automate farming tasks                    | `True`      |
+| `stack_balance`        | Automatically stack balance               | `True`      |
+| `reff`                 | Automate referral claims                  | `True`      |
+| `delay_account_switch` | Delay between account switches (seconds)  | `10`        |
+| `delay_loop`           | Delay before the next loop (seconds)      | `3000`      |
 
 ---
 
@@ -105,6 +110,7 @@ Start using Hashcat by registering through the following link:
 
 ## 🚀 **Key Features Overview**
 
+- **Auto Solve Mastermind**: Automatically solve mastermind challenges.
 - **Auto Daily Claims**: Automatically claim daily rewards.
 - **Auto Card Management**: Manage and optimize your cards effortlessly.
 - **Auto Tap Actions**: Execute tap actions without manual input.

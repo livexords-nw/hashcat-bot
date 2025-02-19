@@ -3,6 +3,7 @@ import json
 import time
 from colorama import Fore
 import requests
+import itertools
 
 class hashcat:
     BASE_URL = "https://hashcats-gateway-ffa6af9b026a.herokuapp.com/"
@@ -607,6 +608,159 @@ class hashcat:
             self.log(f"❌ Unexpected error occurred: {e}", Fore.RED)
             self.log(f"📄 Response Content: {response.text if 'response' in locals() else 'No response'}", Fore.RED)
 
+    def mastermind(self) -> None:
+        headers = {**self.HEADERS, "authorization": self.token}
+
+        # 1. Ambil data level dari endpoint mini-game-paws/level
+        req_url_level = f"{self.BASE_URL}mini-game-paws/level"
+        try:
+            self.log("🚀 Fetching level details...", Fore.CYAN)
+            response_level = requests.get(req_url_level, headers=headers)
+            if response_level.status_code != 200:
+                self.log(f"⚠️  Gagal mengambil detail level. Status Code: {response_level.status_code}", Fore.RED)
+                self.log(f"📄 Response: {response_level.text}", Fore.CYAN)
+                return
+
+            level_data = response_level.json()
+            self.log("🎮 Level Details:", Fore.GREEN)
+
+            player = level_data.get("player", {})
+            level = level_data.get("level", {})
+
+            self.log(f"👤 User ID        : {player.get('userId', 'Unknown')}", Fore.YELLOW)
+            self.log(f"🏆 Current Level  : {player.get('currentLevel', 'Unknown')}", Fore.YELLOW)
+            self.log(f"🎯 Daily Moves    : {player.get('dailyMoves', 'Unknown')}", Fore.YELLOW)
+            self.log("----- Level Info -----", Fore.YELLOW)
+            self.log(f"🆔 Level ID       : {level.get('id', 'Unknown')}", Fore.YELLOW)
+            self.log(f"🎚️ Level          : {level.get('level', 'Unknown')}", Fore.YELLOW)
+            secret_length = level.get("secretLength", 0)
+            self.log(f"🔑 Secret Length  : {secret_length}", Fore.YELLOW)
+
+            rewards = level.get("rewards", [])
+            if rewards:
+                for reward in rewards:
+                    self.log(f"🏅 Reward - Type: {reward.get('type')} | Amount: {reward.get('amount')}", Fore.YELLOW)
+            else:
+                self.log("🚫 No rewards available.", Fore.YELLOW)
+        except requests.exceptions.RequestException as e:
+            self.log(f"❌ Network error saat mengambil detail level: {e}", Fore.RED)
+            return
+        except ValueError as e:
+            self.log(f"❌ Data error: Gagal memproses detail level: {e}", Fore.RED)
+            return
+        except Exception as e:
+            self.log(f"❌ Terjadi error yang tidak terduga: {e}", Fore.RED)
+            return
+
+        # 2. Ambil data moves dari endpoint mini-game-paws/moves
+        req_url_moves = f"{self.BASE_URL}mini-game-paws/moves"
+        try:
+            self.log("🔍 Fetching moves info...", Fore.CYAN)
+            response_moves = requests.get(req_url_moves, headers=headers)
+            if response_moves.status_code != 200:
+                self.log(f"⚠️  Gagal mengambil moves info. Status Code: {response_moves.status_code}", Fore.RED)
+                self.log(f"📄 Response: {response_moves.text}", Fore.CYAN)
+                return
+
+            moves_data = response_moves.json()
+            daily_moves = moves_data.get("dailyMoves", 0)
+            self.log("🎲 Moves Info:", Fore.GREEN)
+            available = moves_data.get("available", {})
+            self.log(f"🔢 Total Moves      : {available.get('total', 'Unknown')}", Fore.YELLOW)
+            self.log(f"🔢 Daily Moves      : {daily_moves}", Fore.YELLOW)
+            self.log(f"💎 Paid Moves       : {available.get('paid', 'Unknown')}", Fore.YELLOW)
+            self.log(f"⏰ Daily Moves Cron : {moves_data.get('dailyMovesCron', 'Unknown')}", Fore.YELLOW)
+            self.log(f"⏳ Next Reset At    : {moves_data.get('dailyMovesNextResetAt', 'Unknown')}", Fore.YELLOW)
+        except requests.exceptions.RequestException as e:
+            self.log(f"❌ Network error saat mengambil moves info: {e}", Fore.RED)
+            return
+        except ValueError as e:
+            self.log(f"❌ Data error: Gagal memproses moves info: {e}", Fore.RED)
+            return
+        except Exception as e:
+            self.log(f"❌ Terjadi error yang tidak terduga: {e}", Fore.RED)
+            return
+
+        # 3. Mempersiapkan pencarian kombinasi dengan benar
+        # Karena secret_length menentukan jumlah angka yang harus dimasukkan,
+        # kita buat generator untuk semua kemungkinan kombinasi.
+        perm_gen = itertools.permutations(range(secret_length))
+        req_url_verify = f"{self.BASE_URL}mini-game-paws/stage/verify"
+        attempt_counter = 0
+
+        # Loop selama daily_moves mencukupi (minimal sama dengan secret_length)
+        while daily_moves >= secret_length:
+            attempt_counter += 1
+            try:
+                current_guess = next(perm_gen)
+            except StopIteration:
+                self.log("🚫 Semua kombinasi telah dicoba.", Fore.YELLOW)
+                break
+
+            self.log(f"🔄 Attempt #{attempt_counter}: Verifying stage with guess: {list(current_guess)}", Fore.CYAN)
+            payload = {"secrets": list(current_guess)}
+
+            try:
+                response_verify = requests.post(req_url_verify, headers=headers, json=payload)
+                if response_verify.status_code != 200:
+                    self.log(f"⚠️  Gagal melakukan verify stage. Status Code: {response_verify.status_code}", Fore.RED)
+                    self.log(f"📄 Response: {response_verify.text}", Fore.CYAN)
+                    break
+
+                verify_data = response_verify.json()
+                self.log("🔍 Verify Response:", Fore.GREEN)
+                self.log(f"✅ Success: {verify_data.get('success')}", Fore.YELLOW)
+
+                attempts_list = verify_data.get("attempts", [])
+                if attempts_list:
+                    for idx, attempt in enumerate(attempts_list, start=1):
+                        self.log(f"📝 Attempt {idx}:", Fore.CYAN)
+                        self.log(f"   🔑 Secrets: {attempt.get('secrets')}", Fore.YELLOW)
+                        self.log(f"   ✅ Result : {attempt.get('result')}", Fore.YELLOW)
+
+                    # Cek kombinasi dari attempt terakhir.
+                    # Misalnya, jika "result" adalah [False, False, ..., False] berarti kombinasi benar.
+                    last_attempt = attempts_list[-1]
+                    if last_attempt.get("result") == [False] * secret_length:
+                        self.log("🎉 Kombinasi benar ditemukan!", Fore.GREEN)
+                        break
+                else:
+                    self.log("⚠️ Tidak ada attempt yang ditemukan di verify response.", Fore.YELLOW)
+            except requests.exceptions.RequestException as e:
+                self.log(f"❌ Network error saat verify stage: {e}", Fore.RED)
+                break
+            except ValueError as e:
+                self.log(f"❌ Data error: Gagal memproses verify response: {e}", Fore.RED)
+                break
+            except Exception as e:
+                self.log(f"❌ Terjadi error yang tidak terduga: {e}", Fore.RED)
+                break
+
+            # Perbarui jumlah daily moves setelah tiap percobaan
+            try:
+                response_moves = requests.get(req_url_moves, headers=headers)
+                if response_moves.status_code != 200:
+                    self.log(f"⚠️  Gagal memperbarui moves info. Status Code: {response_moves.status_code}", Fore.RED)
+                    self.log(f"📄 Response: {response_moves.text}", Fore.CYAN)
+                    break
+
+                moves_data = response_moves.json()
+                daily_moves = moves_data.get("dailyMoves", 0)
+                self.log(f"🔄 Updated Daily Moves: {daily_moves}", Fore.CYAN)
+            except requests.exceptions.RequestException as e:
+                self.log(f"❌ Network error saat memperbarui moves info: {e}", Fore.RED)
+                break
+            except ValueError as e:
+                self.log(f"❌ Data error: Gagal memproses updated moves info: {e}", Fore.RED)
+                break
+            except Exception as e:
+                self.log(f"❌ Terjadi error yang tidak terduga: {e}", Fore.RED)
+                break
+
+            if daily_moves < secret_length:
+                self.log("🚫 Daily moves tidak mencukupi untuk melanjutkan.", Fore.YELLOW)
+                break
+
 if __name__ == "__main__":
     cat = hashcat()
     index = 0
@@ -632,6 +786,7 @@ if __name__ == "__main__":
             "farm": "🌾 Farming",
             "stack_balance": "⬆️ Stacking Balance",
             "reff": "🤝 Referral Program",
+            "mastermind": "mastermind solve",
         }
 
         for task_key, task_name in tasks.items():

@@ -17,17 +17,18 @@ The Hashcat Bot is designed to automate various tasks in **Hashcat**, including:
 - **Automatic Farming**
 - **Automatic Stack Balance**
 - **Automatic Referral Claims**
+- **Automatic Spin the Prize Wheel**
 - **Multi-Account Support**
 
 With this bot, you can save time and maximize your outcomes without manual interactions.
 
 ---
 
-## 🌟 **Version v1.1.3**
+## 🌟 **Version v1.1.4**
 
-### **Changes in Version v1.1.3**
+### **Changes in Version v1.1.4**
 
-1. **New Feature**: Added an auto-solve mastermind system.
+1. **New Feature**: Added auto spin feature for spinning the prize wheel.
 
 ---
 
@@ -40,6 +41,7 @@ With this bot, you can save time and maximize your outcomes without manual inter
 - **Auto Farming**: Handle farming tasks automatically.
 - **Auto Stack Balance**: Automatically stack balances to increase efficiency.
 - **Auto Referral Claims**: Automatically claim rewards from referrals.
+- **Auto Spin**: Automatically spin the prize wheel until your ticket balance is exhausted.
 - **Multi-Account Support**: Manage multiple accounts simultaneously.
 - **Delay Loop and Account Switching**: Set intervals for looping and account transitions.
 
@@ -59,17 +61,18 @@ Start using Hashcat by registering through the following link:
 
 ## ⚙️ **Configuration in `config.json`**
 
-| **Function**           | **Description**                           | **Default** |
-| ---------------------- | ----------------------------------------- | ----------- |
-| `mastermind`           | Automatically solve mastermind challenges | `True`      |
-| `daily`                | Automate daily claims                     | `True`      |
-| `card`                 | Manage cards automatically                | `True`      |
-| `tap`                  | Perform tap actions                       | `True`      |
-| `farm`                 | Automate farming tasks                    | `True`      |
-| `stack_balance`        | Automatically stack balance               | `True`      |
-| `reff`                 | Automate referral claims                  | `True`      |
-| `delay_account_switch` | Delay between account switches (seconds)  | `10`        |
-| `delay_loop`           | Delay before the next loop (seconds)      | `3000`      |
+| **Function**           | **Description**                                   | **Default** |
+| ---------------------- | ------------------------------------------------- | ----------- |
+| `mastermind`           | Automatically solve mastermind challenges         | `True`      |
+| `daily`                | Automate daily claims                             | `True`      |
+| `card`                 | Manage cards automatically                        | `True`      |
+| `tap`                  | Perform tap actions                               | `True`      |
+| `farm`                 | Automate farming tasks                            | `True`      |
+| `stack_balance`        | Automatically stack balance                       | `True`      |
+| `reff`                 | Automate referral claims                          | `True`      |
+| `spin`                 | Automatically spin the prize wheel                | `True`      |
+| `delay_account_switch` | Delay between account switches (seconds)          | `10`        |
+| `delay_loop`           | Delay before the next loop (seconds)              | `3000`      |
 
 ---
 
@@ -117,6 +120,7 @@ Start using Hashcat by registering through the following link:
 - **Auto Farming**: Perform farming tasks efficiently.
 - **Auto Stack Balance**: Stack your balances to improve your results.
 - **Auto Referral Claims**: Seamlessly claim referral rewards.
+- **Auto Spin**: Spin the prize wheel automatically until your tickets are exhausted.
 - **Multi-Account Support**: Run multiple accounts at the same time.
 
 ---
